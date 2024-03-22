@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="menu">
+        <ul>
+            <li><a href="#" id="clear-chat">Очистить чат</a></li>
+            <li><a href="https://tnu-it.site" id="chat-settings">Настройки чата</a></li>
+            <li><a href="#" id="logout">Выйти</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div id="messages">
+            {% for message in messages %}
+                <div class="message">{{ message }} <span class="delete-message"><i class="fas fa-times"></i></span></div>
+            {% endfor %}
+        </div>
+        <form id="message-form" class="form-container">
+            <input type="text" id="message-input" placeholder="Enter your message">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("message-form");
+            const input = document.getElementById("message-input");
+            const messagesDiv = document.getElementById("messages");
+
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                const message = input.value;
+                input.value = "";
+
+                fetch("/send_message", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        "message": message
+                    }),
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "OK") {
+                        const messageDiv = document.createElement("div");
+                        messageDiv.classList.add("message");
+                        messageDiv.innerHTML = `${message} <span class="delete-message"><i class="fas fa-times"></i></span>`;
+                        messagesDiv.appendChild(messageDiv);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            });
+
+            // Обработчик событий для удаления сообщений
+            messagesDiv.addEventListener("click", function(event) {
+                if (event.target.closest(".delete-message")) {
+                    event.target.closest(".message").remove();
+                }
+            });
+
+            // Обработчик событий для очистки чата
+            document.getElementById("clear-chat").addEventListener("click", function(event) {
+                messagesDiv.innerHTML = "";
+            });
+
+            // Обработчик событий для настроек чата
+            document.getElementById("chat-settings").addEventListener("click", function(event) {
+                // Ваш код для открытия окна настроек чата
+            });
+
+            // Обработчик событий для выхода из чата
+            document.getElementById("logout").addEventListener("click", function(event) {
+                // Ваш код для выхода из чата
+            });
+        });
+    </script>
+</body>
+</html>
